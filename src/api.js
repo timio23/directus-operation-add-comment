@@ -2,13 +2,12 @@ export default {
 	id: 'timio23-operation-comment',
 	handler: async ({ collection, comment_key, comment }, { services, database, accountability, getSchema }) => {
 		
-		const { ActivityService } = services;
+		const { CommentsService } = services;
 		const schema = await getSchema({ database });
 
-		const activityService = new ActivityService({
+		const commentService = new CommentsService({
 			schema: schema,
 			accountability: accountability,
-			knex: database,
 		});
 
 		if(!Array.isArray(comment_key) && comment_key.includes("[") === false){
@@ -19,22 +18,17 @@ export default {
 		console.log(`Converted ${keys}`);
 
 		let results = [];
-		let activity = null;
+		let response = null;
 
 		for await (const key of keys) {
 			try {
-				activity = await activityService.createOne({
-					action: 'comment',
+				response = await commentService.createOne({
 					comment: comment,
-					user: accountability?.user ?? null,
 					collection: collection,
-					ip: accountability?.ip ?? null,
-					user_agent: accountability?.userAgent ?? null,
-					origin: accountability?.origin ?? null,
 					item: key,
 				});
 
-				results.push(activity);
+				results.push(response);
 			} catch (error) {
 				console.log(error);
 				return error;
